@@ -55,15 +55,11 @@ python main.py
 ## Troubleshooting
 ### Application not running on ubuntu
 If you faced the below error
-```
-qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
-This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
+> qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
+This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.  
+> Available platform plugins are: linuxfb, vnc, wayland, xcb, minimalegl, offscreen, vkkhrdisplay, eglfs, wayland-egl, minimal.  
+> [1]    260179 IOT instruction (core dumped)  python main.py
 
-Available platform plugins are: linuxfb, vnc, wayland, xcb, minimalegl, offscreen, vkkhrdisplay, eglfs, wayland-egl, minimal.
-
-[1]    260179 IOT instruction (core dumped)  python main.py
-
-```
 
 Try to run the application after running the following command
 ```bash
