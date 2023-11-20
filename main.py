@@ -1,17 +1,12 @@
 import csv
-import json
-from random import choice
 
 from PyQt6 import QtCore
-from PyQt6.QtCore import QSize, QDir, Qt
-from PyQt6.QtGui import QFileSystemModel
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QLabel, QLineEdit, QVBoxLayout, QMenu, \
+from PyQt6.QtCore import QDir, Qt
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QLabel, QLineEdit, QVBoxLayout, \
     QFileDialog, QHBoxLayout, QListWidget, QListWidgetItem, QRadioButton
-import pandas as pd
-
-from openai import OpenAI
-
 import sys
+
+from data import Data
 
 languages = [
     {"Afrikaans": "af"},
@@ -169,7 +164,7 @@ class MainWindow(QMainWindow):
         self.open_ai_line_edit = QLineEdit()
         open_ai_hbox.addWidget(self.open_ai_line_edit)
 
-        # choose open ai model
+        # choose open AI model
         open_ai_model_hbox = QHBoxLayout()
         self.gpt3_button = QRadioButton('GPT 3.5')
         self.gpt3_button.setChecked(True)
@@ -183,7 +178,7 @@ class MainWindow(QMainWindow):
         vbox.addLayout(open_ai_model_hbox)
 
         file_hbox = QHBoxLayout()
-        # File Labale
+        # File Labal
         file_label = QLabel("CSV File Path")
         file_hbox.addWidget(file_label)
 
@@ -275,49 +270,14 @@ class MainWindow(QMainWindow):
             item = self.destination_languages_list.item(index)
             if item.checkState() == Qt.CheckState.Checked:
                 destination_languages.append(list(languages[index].values())[0])
-        translations = self.data.translate_columns_with_open_ai(self.selected_headers, source_language, destination_languages, self.open_ai_line_edit.text(), self.gpt_mode_state)
+        translations = self.data.translate_columns_with_open_ai(self.selected_headers, source_language,
+                                                                destination_languages, self.open_ai_line_edit.text(),
+                                                                self.gpt_mode_state)
         # save data to a file same as the input file and end with _translated
-        translations.to_csv(self.file_line_edit.text().replace('.csv', '_translated.csv'), index=False, quoting=csv.QUOTE_ALL, header=False)
+        translations.to_csv(self.file_line_edit.text().replace('.csv', '_translated.csv'), index=False,
+                            quoting=csv.QUOTE_ALL, header=False)
         # self.generate_button.setEnabled(True)
         # self.generate_button.setText('Generate')
-
-
-class Data:
-    def __init__(self, csv_file_path):
-        self.df = pd.read_csv(csv_file_path)
-
-    def get_headers(self):
-        return self.df.columns.tolist()
-
-    def translate_columns_with_open_ai(self, columns, source_language, destination_languages, openai_api_key, model):
-        openai_client = OpenAI(
-            api_key=openai_api_key
-        )
-        for index, row in self.df.iterrows():
-            for column in columns:
-                column_translated = dict()
-                # first put the source language in the dictionary
-                column_translated[source_language] = row[column]
-                for lang in destination_languages:
-                    translated_text = openai_client.chat.completions.create(
-                        model=model,
-                        messages=[
-                            {
-                                "role": "system",
-                                "content": f"You will be provided with a sentence in {source_language}, and your task is to translate it into {lang}."
-                            },
-                            {
-                                "role": "user",
-                                "content": row[column]
-                            }
-                        ],
-                        temperature=0,
-                        max_tokens=500,
-                    ).choices[0].message.content
-                    column_translated[lang] = translated_text
-                self.df.at[index, column] = json.dumps(column_translated)
-
-        return self.df
 
 
 if __name__ == '__main__':
