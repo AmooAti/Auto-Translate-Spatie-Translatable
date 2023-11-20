@@ -3,10 +3,10 @@ import csv
 from PyQt6 import QtCore
 from PyQt6.QtCore import QDir, Qt
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QMainWindow, QLabel, QLineEdit, QVBoxLayout, \
-    QFileDialog, QHBoxLayout, QListWidget, QListWidgetItem, QRadioButton
+    QFileDialog, QHBoxLayout, QListWidget, QListWidgetItem, QRadioButton, QCheckBox, QGridLayout, QDialog, QMessageBox
 import sys
 
-from data import Data
+from data import Data, OpenAIException
 
 languages = [
     {"Afrikaans": "af"},
@@ -152,6 +152,7 @@ class MainWindow(QMainWindow):
 
         self.data = None
         self.selected_headers = []
+        self.include_header_in_output = False
         self.gpt_mode_state = 'gpt-3.5-turbo'
 
         self.setWindowTitle("Prepare your database for spatie/laravel-translatable")
@@ -223,6 +224,18 @@ class MainWindow(QMainWindow):
         vbox.addWidget(destination_languages_label)
         vbox.addWidget(self.destination_languages_list)
 
+        options_label = QLabel('Options')
+        vbox.addWidget(options_label)
+        options_grid = QGridLayout()
+        all_columns_radio = QCheckBox('Output without Headers')
+        all_columns_radio.setChecked(self.include_header_in_output)
+        all_columns_radio.setToolTip(
+            'If checked, the output will not have headers. For database you need to check this.')
+        all_columns_radio.stateChanged.connect(self.include_header_option_change)
+        options_grid.addWidget(all_columns_radio, 0, 0)
+        options_grid.setColumnStretch(1, 1)
+        vbox.addLayout(options_grid)
+
         # Generate Button
         self.generate_button = QPushButton('Translate')
         self.generate_button.clicked.connect(self.generate)
@@ -260,6 +273,12 @@ class MainWindow(QMainWindow):
         elif button.text() == 'GPT 4':
             self.gpt_mode_state = 'gpt-4'
 
+    def include_header_option_change(self, state):
+        if state == 2:
+            self.include_header_in_output = True
+        else:
+            self.include_header_in_output = False
+
     @QtCore.pyqtSlot()
     def generate(self):
         # self.generate_button.setText('Generating...')
@@ -275,7 +294,7 @@ class MainWindow(QMainWindow):
                                                                 self.gpt_mode_state)
         # save data to a file same as the input file and end with _translated
         translations.to_csv(self.file_line_edit.text().replace('.csv', '_translated.csv'), index=False,
-                            quoting=csv.QUOTE_ALL, header=False)
+                            quoting=csv.QUOTE_ALL, header=self.include_header_in_output)
         # self.generate_button.setEnabled(True)
         # self.generate_button.setText('Generate')
 
