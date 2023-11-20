@@ -52,6 +52,8 @@ python main.py
 - [ ] Main thread issue, use multithreading to prevent screen freeze during translation and show loader or progress bar
 - [ ] Input validation
 - [ ] Create Executables
+- [ ] Create samples
+- [ ] Marian Machine Translation
 
 ## Troubleshooting
 ### Application not running on ubuntu
