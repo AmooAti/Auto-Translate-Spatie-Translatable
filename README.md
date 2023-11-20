@@ -51,6 +51,7 @@ python main.py
 - [ ] Translate missing languages features
 - [ ] Main thread issue, use multithreading to prevent screen freeze during translation and show loader or progress bar
 - [ ] Input validation
+- [ ] Create Executables
 
 ## Troubleshooting
 ### Application not running on ubuntu
