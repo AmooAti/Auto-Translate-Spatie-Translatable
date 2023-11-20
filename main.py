@@ -289,9 +289,21 @@ class MainWindow(QMainWindow):
             item = self.destination_languages_list.item(index)
             if item.checkState() == Qt.CheckState.Checked:
                 destination_languages.append(list(languages[index].values())[0])
-        translations = self.data.translate_columns_with_open_ai(self.selected_headers, source_language,
-                                                                destination_languages, self.open_ai_line_edit.text(),
-                                                                self.gpt_mode_state)
+        try:
+            translations = self.data.translate_columns_with_open_ai(self.selected_headers, source_language,
+                                                                    destination_languages,
+                                                                    self.open_ai_line_edit.text(),
+                                                                    self.gpt_mode_state)
+        except OpenAIException as e:
+            # self.generate_button.setEnabled(True)
+            # self.generate_button.setText('Generate')
+            # show error message
+            error_message_box = QMessageBox(self)
+            error_message_box.setWindowTitle('Error')
+            error_message_box.setText(str(e))
+            error_message_box.setIcon(QMessageBox.Icon.Critical)
+            error_message_box.exec()
+            return
         # save data to a file same as the input file and end with _translated
         translations.to_csv(self.file_line_edit.text().replace('.csv', '_translated.csv'), index=False,
                             quoting=csv.QUOTE_ALL, header=self.include_header_in_output)

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from openai import OpenAI
+from openai import OpenAI, AuthenticationError
 import json
 
 
@@ -21,22 +21,29 @@ class Data:
                 # first put the source language in the dictionary
                 column_translated[source_language] = row[column]
                 for lang in destination_languages:
-                    translated_text = openai_client.chat.completions.create(
-                        model=model,
-                        messages=[
-                            {
-                                "role": "system",
-                                "content": f"You will be provided with a sentence in {source_language}, and your task is to translate it into {lang}."
-                            },
-                            {
-                                "role": "user",
-                                "content": row[column]
-                            }
-                        ],
-                        temperature=0,
-                        max_tokens=500,
-                    ).choices[0].message.content
+                    try:
+                        translated_text = openai_client.chat.completions.create(
+                            model=model,
+                            messages=[
+                                {
+                                    "role": "system",
+                                    "content": f"You will be provided with a sentence in {source_language}, and your task is to translate it into {lang}."
+                                },
+                                {
+                                    "role": "user",
+                                    "content": row[column]
+                                }
+                            ],
+                            temperature=0,
+                            max_tokens=500,
+                        ).choices[0].message.content
+                    except AuthenticationError:
+                        raise OpenAIException("Invalid OpenAI API key")
                     column_translated[lang] = translated_text
                 self.df.at[index, column] = json.dumps(column_translated)
 
         return self.df
+
+
+class OpenAIException(Exception):
+    pass
