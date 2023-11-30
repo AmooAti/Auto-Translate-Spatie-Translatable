@@ -46,7 +46,7 @@ python main.py
 7. Click on translate button.
 
 ## TODO
-- [ ] Replace the Google Translate package
+- [ ] Add Google Translate
 - [ ] User can choose whether ID column should be in output file
 - [ ] Translate missing languages features
 - [ ] Main thread issue, use multithreading to prevent screen freeze during translation and show loader or progress bar
