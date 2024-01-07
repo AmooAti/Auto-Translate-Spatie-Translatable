@@ -231,7 +231,7 @@ class MainWindow(QMainWindow):
         options_label = QLabel('Options')
         vbox.addWidget(options_label)
         options_grid = QGridLayout()
-        all_columns_radio = QCheckBox('Output without Headers')
+        all_columns_radio = QCheckBox('Output with Headers')
         all_columns_radio.setChecked(self.include_header_in_output)
         all_columns_radio.setToolTip(
             'If checked, the output will not have headers. For database you need to check this.')
