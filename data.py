@@ -27,7 +27,7 @@ class Data:
                             messages=[
                                 {
                                     "role": "system",
-                                    "content": f"You will be provided with a sentence in {source_language}, and your task is to translate it into {lang}."
+                                    "content": f"You will be provided with a sentence in {source_language}, and your task is to translate it into {lang}. If provided sentence equals to null, output null."
                                 },
                                 {
                                     "role": "user",
