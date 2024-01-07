@@ -257,6 +257,7 @@ class MainWindow(QMainWindow):
         # currently read only because due to the lack of action when line edit updates
         self.file_line_edit.setReadOnly(True)
         self.data = Data(filename)
+        self.header_list.clear()
         self.header_list.setVisible(True)
         for header in self.data.get_headers():
             item = QListWidgetItem(header)
