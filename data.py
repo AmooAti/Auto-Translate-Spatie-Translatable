@@ -1,6 +1,6 @@
 import pandas as pd
 
-from openai import OpenAI, AuthenticationError
+from openai import OpenAI, AuthenticationError,APIConnectionError
 import json
 
 
@@ -39,6 +39,8 @@ class Data:
                         ).choices[0].message.content
                     except AuthenticationError:
                         raise OpenAIException("Invalid OpenAI API key")
+                    except APIConnectionError:
+                        raise OpenAIException("Connection Error")
                     column_translated[lang] = translated_text
                 self.df.at[index, column] = json.dumps(column_translated)
 
