@@ -174,6 +174,10 @@ class MainWindow(QMainWindow):
         self.gpt4_button = QRadioButton('GPT 4')
         self.gpt4_button.toggled.connect(lambda: self.select_gpt_mode(self.gpt4_button))
         open_ai_model_hbox.addWidget(self.gpt4_button)
+        self.gpt_4_preview_button = QRadioButton('GPT 4 Turbo')
+        self.gpt_4_preview_button.toggled.connect(lambda: self.select_gpt_mode(self.gpt_4_preview_button))
+        open_ai_model_hbox.addWidget(self.gpt_4_preview_button)
+        
 
         vbox.addLayout(open_ai_hbox)
         vbox.addLayout(open_ai_model_hbox)
@@ -272,6 +276,8 @@ class MainWindow(QMainWindow):
             self.gpt_mode_state = 'gpt-3.5-turbo'
         elif button.text() == 'GPT 4':
             self.gpt_mode_state = 'gpt-4'
+        elif button.text() == 'GPT 4 Turbo':
+            self.gpt_mode_state = 'gpt-4-1106-preview'
 
     def include_header_option_change(self, state):
         if state == 2:
