@@ -11,7 +11,7 @@ class Data:
     def get_headers(self):
         return self.df.columns.tolist()
 
-    def translate_columns_with_open_ai(self, columns, source_language, destination_languages, openai_api_key, model):
+    def translate_columns_with_open_ai(self, columns, source_language, destination_languages, openai_api_key, model, only_missing_langs = False):
         openai_client = OpenAI(
             api_key=openai_api_key
         )
@@ -19,9 +19,18 @@ class Data:
             for column in columns:
                 column_translated = dict()
                 # first put the source language in the dictionary
-                column_translated[source_language] = row[column]
+                if only_missing_langs:
+                    org_data = json.loads(row[column])
+                    for s_lang in org_data:
+                        column_translated[s_lang] = org_data[s_lang]
+                else:
+                    column_translated[source_language] = row[column]
                 for lang in destination_languages:
                     try:
+                        if only_missing_langs:
+                            raw_text = json.loads(row[column])[source_language]
+                        else:
+                            raw_text = row[column]
                         translated_text = openai_client.chat.completions.create(
                             model=model,
                             messages=[
@@ -31,7 +40,7 @@ class Data:
                                 },
                                 {
                                     "role": "user",
-                                    "content": row[column]
+                                    "content": raw_text
                                 }
                             ],
                             temperature=0,

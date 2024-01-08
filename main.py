@@ -153,6 +153,7 @@ class MainWindow(QMainWindow):
         self.data = None
         self.selected_headers = []
         self.include_header_in_output = False
+        self.only_missing_langs = False;
         self.gpt_mode_state = 'gpt-3.5-turbo'
 
         self.setWindowTitle("Prepare your database for spatie/laravel-translatable")
@@ -231,12 +232,24 @@ class MainWindow(QMainWindow):
         options_label = QLabel('Options')
         vbox.addWidget(options_label)
         options_grid = QGridLayout()
-        all_columns_radio = QCheckBox('Output with Headers')
-        all_columns_radio.setChecked(self.include_header_in_output)
-        all_columns_radio.setToolTip(
-            'If checked, the output will not have headers. For database you need to check this.')
-        all_columns_radio.stateChanged.connect(self.include_header_option_change)
-        options_grid.addWidget(all_columns_radio, 0, 0)
+        
+        # Output with headers or not checkbox
+        all_columns_check = QCheckBox('Output with Headers')
+        all_columns_check.setChecked(self.include_header_in_output)
+        all_columns_check.setToolTip(
+            'If checked, the output will have headers. For databases like MySQL make sure this option is not checked!')
+        all_columns_check.stateChanged.connect(self.include_header_option_change)
+        options_grid.addWidget(all_columns_check, 0, 0)
+
+        # Only translate missing langs or all checkbox
+        only_translate_missing_langs_check = QCheckBox('Only Translate missing langs')
+        only_translate_missing_langs_check.setChecked(self.only_missing_langs)
+        only_translate_missing_langs_check.setToolTip(
+            'If checked, only missing translations will translate base on source language.'
+        )
+        only_translate_missing_langs_check.stateChanged.connect(self.only_missing_langs_change)
+        options_grid.addWidget(only_translate_missing_langs_check, 0, 1)
+
         options_grid.setColumnStretch(1, 1)
         vbox.addLayout(options_grid)
 
@@ -286,6 +299,12 @@ class MainWindow(QMainWindow):
         else:
             self.include_header_in_output = False
 
+    def only_missing_langs_change(self, state):
+        if state == 2:
+            self.only_missing_langs = True
+        else:
+            self.only_missing_langs = False
+
     @QtCore.pyqtSlot()
     def generate(self):
         # self.generate_button.setText('Generating...')
@@ -300,7 +319,8 @@ class MainWindow(QMainWindow):
             translations = self.data.translate_columns_with_open_ai(self.selected_headers, source_language,
                                                                     destination_languages,
                                                                     self.open_ai_line_edit.text(),
-                                                                    self.gpt_mode_state)
+                                                                    self.gpt_mode_state,
+                                                                    self.only_missing_langs)
         except OpenAIException as e:
             # self.generate_button.setEnabled(True)
             # self.generate_button.setText('Generate')
