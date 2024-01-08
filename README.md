@@ -48,7 +48,6 @@ python main.py
 ## TODO
 - [ ] Add Google Translate
 - [ ] User can choose whether ID column should be in output file
-- [ ] Translate missing languages features
 - [ ] Main thread issue, use multithreading to prevent screen freeze during translation and show loader or progress bar
 - [ ] Input validation
 - [ ] Create Executables
