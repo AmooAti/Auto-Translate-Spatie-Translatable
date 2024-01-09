@@ -333,7 +333,7 @@ class MainWindow(QMainWindow):
             return
         # save data to a file same as the input file and end with _translated
         translations.to_csv(self.file_line_edit.text().replace('.csv', '_translated.csv'), index=False,
-                            quoting=csv.QUOTE_ALL, header=self.include_header_in_output)
+                            quoting=csv.QUOTE_MINIMAL, header=self.include_header_in_output, na_rep='NULL')
         # self.generate_button.setEnabled(True)
         # self.generate_button.setText('Generate')
 
