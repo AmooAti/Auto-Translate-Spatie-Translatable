@@ -266,6 +266,8 @@ class MainWindow(QMainWindow):
     def open_file_dialog(self):
         filename, _ = QFileDialog.getOpenFileName(self, "Choose your CSV", QDir().homePath(),
                                                   "CSV (*.csv);;All Files (*.*)")
+        if not filename:
+            return
         self.file_line_edit.setText(filename)
         # currently read only because due to the lack of action when line edit updates
         self.file_line_edit.setReadOnly(True)
