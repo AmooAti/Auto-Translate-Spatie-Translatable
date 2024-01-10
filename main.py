@@ -309,6 +309,21 @@ class MainWindow(QMainWindow):
 
     @QtCore.pyqtSlot()
     def generate(self):
+        openai_key = self.open_ai_line_edit.text()
+        if not openai_key:
+            error_message_box = QMessageBox(self)
+            error_message_box.setWindowTitle('Error')
+            error_message_box.setText("Provide an OpenAI API key!")
+            error_message_box.setIcon(QMessageBox.Icon.Critical)
+            error_message_box.exec()
+            return
+        if not self.data:
+            error_message_box = QMessageBox(self)
+            error_message_box.setWindowTitle('Error')
+            error_message_box.setText("Provide your CSV file")
+            error_message_box.setIcon(QMessageBox.Icon.Critical)
+            error_message_box.exec()
+            return
         # self.generate_button.setText('Generating...')
         # self.generate_button.setEnabled(False)
         source_language = list(languages[self.source_language_list.currentRow()].values())[0]
