@@ -145,6 +145,46 @@ languages = [
     {"Zulu": "zu"},
 ]
 
+class TranslateWorker(QtCore.QObject):
+    started = QtCore.pyqtSignal()
+    progress = QtCore.pyqtSignal(int)
+    finished = QtCore.pyqtSignal()
+    error = QtCore.pyqtSignal(Exception)
+
+    def __init__(self, data, source_language, destination_languages_list, selected_headers, open_ai_key, gpt_mode, only_missing_langs, filename, include_headers_in_output):
+        super().__init__()
+        self.data = data
+        self.source_language = source_language
+        self.destination_languages_list = destination_languages_list
+        self.selected_headers = selected_headers
+        self.open_ai_key = open_ai_key
+        self.gpt_mode = gpt_mode
+        self.only_missing_langs = only_missing_langs
+        self.filename = filename
+        self.include_headers_in_output = include_headers_in_output
+
+    def run(self):
+        destination_languages = []
+        for index in range(self.destination_languages_list.count()):
+            item = self.destination_languages_list.item(index)
+            if item.checkState() == Qt.CheckState.Checked:
+                destination_languages.append(list(languages[index].values())[0])
+        try:
+            translations = self.data.translate_columns_with_open_ai(self.selected_headers, self.source_language,
+                                                                    destination_languages,
+                                                                    self.open_ai_key,
+                                                                    self.gpt_mode,
+                                                                    self.only_missing_langs)
+
+            # save data to a file same as the input file and end with _translated
+            translations.to_csv(self.filename.replace('.csv', '_translated.csv'), index=False,
+                                quoting=csv.QUOTE_MINIMAL, header=self.include_headers_in_output, na_rep='NULL')
+
+        except OpenAIException as e:
+            self.error.emit(e)
+        finally:
+            self.finished.emit()
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -307,35 +347,54 @@ class MainWindow(QMainWindow):
 
     @QtCore.pyqtSlot()
     def generate(self):
-        # self.generate_button.setText('Generating...')
-        # self.generate_button.setEnabled(False)
         source_language = list(languages[self.source_language_list.currentRow()].values())[0]
-        destination_languages = []
-        for index in range(self.destination_languages_list.count()):
-            item = self.destination_languages_list.item(index)
-            if item.checkState() == Qt.CheckState.Checked:
-                destination_languages.append(list(languages[index].values())[0])
-        try:
-            translations = self.data.translate_columns_with_open_ai(self.selected_headers, source_language,
-                                                                    destination_languages,
-                                                                    self.open_ai_line_edit.text(),
-                                                                    self.gpt_mode_state,
-                                                                    self.only_missing_langs)
-        except OpenAIException as e:
-            # self.generate_button.setEnabled(True)
-            # self.generate_button.setText('Generate')
-            # show error message
-            error_message_box = QMessageBox(self)
-            error_message_box.setWindowTitle('Error')
-            error_message_box.setText(str(e))
-            error_message_box.setIcon(QMessageBox.Icon.Critical)
-            error_message_box.exec()
-            return
-        # save data to a file same as the input file and end with _translated
-        translations.to_csv(self.file_line_edit.text().replace('.csv', '_translated.csv'), index=False,
-                            quoting=csv.QUOTE_MINIMAL, header=self.include_header_in_output, na_rep='NULL')
-        # self.generate_button.setEnabled(True)
-        # self.generate_button.setText('Generate')
+
+        self.progress_dialog = QMessageBox(self)
+        self.progress_dialog.setWindowTitle("Running")
+        self.progress_dialog.setText("Please wait, we're trying hard to translate you data!")
+        self.progress_dialog.setIcon(QMessageBox.Icon.Information)
+        self.progress_dialog.setStandardButtons(QMessageBox.StandardButton.Abort)
+        self.progress_dialog.show()
+
+        self.generate_button.setEnabled(False)
+        self.thread = QtCore.QThread()
+        self.translate_worker = TranslateWorker(
+            self.data,
+            source_language,
+            self.destination_languages_list,
+            self.selected_headers,
+            self.open_ai_line_edit.text(),
+            self.gpt_mode_state,
+            self.only_missing_langs,
+            self.file_line_edit.text(),
+            self.include_header_in_output
+        )
+
+        self.translate_worker.moveToThread(self.thread)
+        self.thread.started.connect(self.translate_worker.run)
+        self.translate_worker.error.connect(self.show_translate_error)
+        self.translate_worker.finished.connect(self.thread.quit)
+        self.translate_worker.finished.connect(self.thread.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+
+        self.thread.start()
+
+        self.thread.finished.connect(
+            lambda: (
+                self.generate_button.setEnabled(True),
+                self.progress_dialog.hide()
+            )
+        )
+
+    def show_translate_error(self, e):
+        self.progress_dialog.hide()
+        self.generate_button.setEnabled(True)
+        # show error message
+        error_message_box = QMessageBox(self)
+        error_message_box.setWindowTitle('Error')
+        error_message_box.setText(str(e))
+        error_message_box.setIcon(QMessageBox.Icon.Critical)
+        error_message_box.exec()
 
 
 if __name__ == '__main__':
