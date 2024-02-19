@@ -163,6 +163,9 @@ class TranslateWorker(QtCore.QObject):
         self.filename = filename
         self.include_headers_in_output = include_headers_in_output
 
+
+
+
     def run(self):
         destination_languages = []
         for index in range(self.destination_languages_list.count()):
@@ -354,6 +357,8 @@ class MainWindow(QMainWindow):
         self.progress_dialog.setText("Please wait, we're trying hard to translate you data!")
         self.progress_dialog.setIcon(QMessageBox.Icon.Information)
         self.progress_dialog.setStandardButtons(QMessageBox.StandardButton.Abort)
+        # TODO stop processing!
+        self.progress_dialog.button(QMessageBox.StandardButton.Abort).clicked.connect(lambda: print("Hello!"))
         self.progress_dialog.show()
 
         self.generate_button.setEnabled(False)
